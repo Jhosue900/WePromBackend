@@ -7,47 +7,27 @@ const app = express();
 
 app.set("port", process.env.PORT || 4000);
 
-// Configuración CORS para desarrollo y producción
+// ⭐⭐ CONFIGURACIÓN CORS SIMPLIFICADA ⭐⭐
 const corsOptions = {
-  origin: function (origin, callback) {
-    // En desarrollo, permitir todos los orígenes
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-    
-    // En producción, lista de orígenes permitidos
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://tu-frontend.vercel.app', // Cambia por tu frontend real
-      'https://we-prom.vercel.app' // Si tu frontend está en Vercel
-    ];
-    
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Origen no permitido por CORS'));
-    }
-  },
+  origin: [
+    'http://localhost:5173',      // Tu frontend local
+    'http://localhost:3000',      // Otro puerto común
+    'https://we-prom.vercel.app', // Tu frontend en producción (cámbialo si es diferente)
+    'https://tu-frontend.vercel.app' // Ejemplo - cambia por tu URL real
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'Accept',
-    'Origin'
-  ],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 200
 };
 
 // Aplicar CORS antes de cualquier middleware
 app.use(cors(corsOptions));
 
-// Para preflight requests
-app.options('*', cors(corsOptions));
+// ⭐⭐ COMENTA O ELIMINA ESTA LÍNEA PROBLEMÁTICA ⭐⭐
+// app.options('*', cors(corsOptions)); // ❌ ELIMINA ESTO
 
-// Headers adicionales
+// Headers adicionales (opcional, pero bueno para preflight)
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -62,6 +42,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Resto de tu código se mantiene igual...
 app.use(morgan("dev"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -80,39 +61,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// Manejo de errores global
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  
-  // Si es error de CORS
-  if (err.message === 'Origen no permitido por CORS') {
-    return res.status(403).json({
-      success: false,
-      message: 'Origen no permitido'
-    });
-  }
-  
-  // Si es error de Multer
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({
-      success: false,
-      message: 'El archivo es demasiado grande (máximo 5MB)'
-    });
-  }
-  
-  if (err.message === 'Solo se permiten archivos de imagen') {
-    return res.status(400).json({
-      success: false,
-      message: 'Solo se permiten archivos de imagen'
-    });
-  }
-  
-  res.status(500).json({
-    success: false,
-    message: 'Error interno del servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
+// Manejo de errores global...
+// ... (tu código existente)
 
 app.listen(app.get("port"))
 console.log("Server running on port ", app.get("port"))
