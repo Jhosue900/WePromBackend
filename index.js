@@ -7,28 +7,52 @@ const app = express();
 
 app.set("port", process.env.PORT || 4000);
 
-// ⭐ CONFIGURACIÓN CORS - DESARROLLO Y PRODUCCIÓN ⭐
+// ⭐ CONFIGURACIÓN CORS COMPLETA ⭐
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://we-prom.vercel.app', // Tu frontend en producción
-  'https://we-prom-backend.vercel.app' // El mismo backend
+  'http://localhost:4000',
+  'https://we-prom.vercel.app',
+  'https://we-prom-backend.vercel.app'
 ];
 
+// Middleware CORS manual ANTES de todo
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Si el origin está en la lista permitida, o no hay origin (llamadas desde servidor)
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Manejar preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
+// Middleware adicional de CORS usando el paquete
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir requests sin origin (como Postman, apps móviles, etc.)
+    // Permitir requests sin origin (Postman, apps móviles, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('⚠️ Origen bloqueado:', origin);
-      callback(null, true); // En producción, cambia esto a: callback(new Error('Not allowed by CORS'))
+      console.log('⚠️ Origen no permitido:', origin);
+      // Para desarrollo, permitir de todas formas
+      callback(null, true);
+      // Para producción estricta, descomentar:
+      // callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
@@ -48,6 +72,7 @@ app.get('/', (req, res) => {
   res.json({ 
     success: true, 
     message: 'API WeProm funcionando correctamente ✅',
+    timestamp: new Date().toISOString(),
     endpoints: {
       campaigns: {
         getAll: 'GET /campaigns',
@@ -90,5 +115,6 @@ app.use((err, req, res, next) => {
 const PORT = app.get("port");
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`📍 URL: http://localhost:${PORT}`);
+  console.log(`📍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Orígenes permitidos:`, allowedOrigins);
 });
