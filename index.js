@@ -7,68 +7,70 @@ const app = express();
 
 app.set("port", process.env.PORT || 4000);
 
-// ⭐ SIMPLIFIED CORS CONFIGURATION ⭐
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, postman)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://we-prom.vercel.app',
-      'https://your-frontend-domain.vercel.app' // Update with your actual domain
-    ];
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(null, true); // For development, allow all origins
-      // In production, use: callback(new Error('Not allowed by CORS'))
-    }
-  },
-  credentials: true,
+// ⭐ CONFIGURACIÓN CORS ULTRA SIMPLE - PERMITE TODO ⭐
+app.use(cors({
+  origin: '*', // Permite todos los orígenes (para desarrollo)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
-};
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
-// Apply CORS middleware FIRST
-app.use(cors(corsOptions));
-
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
-
-// Other middleware
+// Middleware de logging
 app.use(morgan("dev"));
+
+// Parseo de JSON y URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Routes
+// Rutas
 app.use(router);
 
-// Root route
+// Ruta raíz de prueba
 app.get('/', (req, res) => {
   res.json({ 
     success: true, 
-    message: 'API WeProm funcionando',
+    message: 'API WeProm funcionando correctamente ✅',
     endpoints: {
-      campaigns: '/campaigns',
-      products: '/products'
+      campaigns: {
+        getAll: 'GET /campaigns',
+        create: 'POST /campaigns',
+        update: 'PUT /campaigns/:id',
+        delete: 'DELETE /campaigns/:id'
+      },
+      products: {
+        getAll: 'GET /products',
+        create: 'POST /products',
+        update: 'PUT /products/:id',
+        delete: 'DELETE /products/:id'
+      }
     }
   });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
-  res.status(err.status || 500).json({
+// Manejo de errores 404
+app.use((req, res) => {
+  res.status(404).json({
     success: false,
-    error: err.message || 'Internal Server Error'
+    message: 'Ruta no encontrada',
+    path: req.originalUrl
   });
 });
 
-// Start server
-app.listen(app.get("port"), () => {
-  console.log("Server running on port", app.get("port"));
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error('❌ Error:', err.message);
+  console.error('Stack:', err.stack);
+  
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Error interno del servidor',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// Iniciar servidor
+const PORT = app.get("port");
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`📍 URL: http://localhost:${PORT}`);
 });
