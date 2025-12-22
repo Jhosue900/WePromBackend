@@ -7,12 +7,30 @@ const app = express();
 
 app.set("port", process.env.PORT || 4000);
 
-// ⭐ CONFIGURACIÓN CORS ULTRA SIMPLE - PERMITE TODO ⭐
+// ⭐ CONFIGURACIÓN CORS - DESARROLLO Y PRODUCCIÓN ⭐
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://we-prom.vercel.app', // Tu frontend en producción
+  'https://we-prom-backend.vercel.app' // El mismo backend
+];
+
 app.use(cors({
-  origin: '*', // Permite todos los orígenes (para desarrollo)
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (como Postman, apps móviles, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('⚠️ Origen bloqueado:', origin);
+      callback(null, true); // En producción, cambia esto a: callback(new Error('Not allowed by CORS'))
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 
 // Middleware de logging
