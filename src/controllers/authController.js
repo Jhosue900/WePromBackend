@@ -13,6 +13,7 @@ let tokenBlacklist = new Set();
 // Usuario de prueba (en producción deberías consultar tu base de datos)
 const ADMIN_USER = {
   id: 1,
+  name: "This gonna change by the web owner or admin",
   email: 'admin@weprom.com',
   // Password: "admin123" (hasheado con bcrypt)
   password: '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa'
@@ -53,7 +54,8 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { 
         id: ADMIN_USER.id, 
-        email: ADMIN_USER.email 
+        email: ADMIN_USER.email,
+        name: ADMIN_USER.name 
       },
       JWT_SECRET,
       { expiresIn: '24h' }
@@ -65,7 +67,8 @@ const login = async (req, res) => {
       token,
       user: {
         id: ADMIN_USER.id,
-        email: ADMIN_USER.email
+        email: ADMIN_USER.email,
+        name: ADMIN_USER.name
       }
     });
 
