@@ -16,7 +16,7 @@ const ADMIN_USER = {
   name: "This gonna change by the web owner or admin name",
   email: 'admin@weprom.com',
   // Password: "admin123" (hasheado con bcrypt)
-  password: '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa'
+  password: 'Weprom.2025'
 };
 
 // Login
