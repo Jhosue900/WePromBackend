@@ -40,12 +40,12 @@ const login = async (req, res) => {
     }
 
     // Verificar contraseña
-    const isValidPassword = await bcrypt.compare(password, ADMIN_USER.password);
+    //const isValidPassword = await bcrypt.compare(password, ADMIN_USER.password);
     
-    if (!isValidPassword) {
+    if (passsword !== ADMIN_USER.password) {
       return res.status(401).json({
         success: false,
-        message: 'Credenciales incorrectas'
+        message: 'Contraseña incorrecta'
       });
     }
 
