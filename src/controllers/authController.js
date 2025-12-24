@@ -13,7 +13,7 @@ let tokenBlacklist = new Set();
 // Usuario de prueba (en producción deberías consultar tu base de datos)
 const ADMIN_USER = {
   id: 1,
-  name: "This gonna change by the web owner or admin",
+  name: "This gonna change by the web owner or admin name",
   email: 'admin@weprom.com',
   // Password: "admin123" (hasheado con bcrypt)
   password: '$2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lRps.9cGLcZEiGDMVr5yUP1KUOYTa'
